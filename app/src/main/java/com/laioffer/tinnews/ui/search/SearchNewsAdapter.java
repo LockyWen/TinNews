@@ -1,5 +1,6 @@
 package com.laioffer.tinnews.ui.search;
 
+import android.content.ClipData;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SearchNewsAdapter extends RecyclerView.Adapter<SearchNewsAdapter.SearchNewsViewHolder> {
-
+    private ItemCallBack callBack;
     // Supporting data
     private List<Article> articles = new ArrayList<>();
     public void setArticles(List<Article> newsList){
@@ -40,6 +41,7 @@ public class SearchNewsAdapter extends RecyclerView.Adapter<SearchNewsAdapter.Se
         holder.favoriteImageView.setImageResource(R.drawable.ic_favorite_24dp);
         holder.itemTitleTextView.setText(article.title);
         Picasso.get().load(article.urlToImage).into(holder.itemImageView);
+        holder.itemView.setOnClickListener(v -> callBack.onOpenDetails(article));
     }
 
     @Override
@@ -61,5 +63,13 @@ public class SearchNewsAdapter extends RecyclerView.Adapter<SearchNewsAdapter.Se
             itemImageView = binding.searchItemImage;
             itemTitleTextView = binding.searchItemTitle;
         }
+    }
+
+    interface ItemCallBack{
+        void onOpenDetails(Article article);
+    }
+
+    public void setCallBack(ItemCallBack callBack) {
+        this.callBack = callBack;
     }
 }
