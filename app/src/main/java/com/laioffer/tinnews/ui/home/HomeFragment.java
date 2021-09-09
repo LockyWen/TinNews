@@ -14,17 +14,32 @@ import android.view.ViewGroup;
 
 import com.laioffer.tinnews.R;
 import com.laioffer.tinnews.databinding.FragmentHomeBinding;
+import com.laioffer.tinnews.model.Article;
 import com.laioffer.tinnews.repository.NewsRepository;
 import com.laioffer.tinnews.repository.NewsViewModelFactory;
+import com.yuyakaido.android.cardstackview.CardStackLayoutManager;
+import com.yuyakaido.android.cardstackview.StackFrom;
+
+import java.util.List;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel viewModel;
     private FragmentHomeBinding binding;
+    private CardStackLayoutManager layoutManager;
+    private List<Article> articles;
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Set up card stack layout manager
+        CardSwipeAdapter swipeAdapter = new CardSwipeAdapter();
+        layoutManager = new CardStackLayoutManager(requireContext());
+        layoutManager.setStackFrom(StackFrom.Top);
+        binding.homeCardStackView.setLayoutManager(layoutManager);
+        binding.homeCardStackView.setAdapter(swipeAdapter);
+        //
 
         NewsRepository repository = new NewsRepository(getContext());
         viewModel = new ViewModelProvider(this, new NewsViewModelFactory(repository))
@@ -36,6 +51,8 @@ public class HomeFragment extends Fragment {
                         getViewLifecycleOwner(),
                         newsResponse -> {
                             if (newsResponse != null) {
+                                articles = newsResponse.articles;
+                                swipeAdapter.setArticles(articles);
                                 Log.d("HomeFragment", newsResponse.toString());
                             }
                         });
