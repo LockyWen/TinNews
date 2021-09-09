@@ -1,14 +1,29 @@
 package com.laioffer.tinnews.ui.save;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.laioffer.tinnews.R;
+import com.laioffer.tinnews.database.TinewsDatabase;
+import com.laioffer.tinnews.databinding.FragmentSaveBinding;
+import com.laioffer.tinnews.model.Article;
+import com.laioffer.tinnews.repository.NewsRepository;
+import com.laioffer.tinnews.repository.NewsViewModelFactory;
+
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -21,6 +36,8 @@ public class SaveFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private FragmentSaveBinding binding;
+    private SaveViewModel saveViewModel;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -28,6 +45,7 @@ public class SaveFragment extends Fragment {
 
     public SaveFragment() {
         // Required empty public constructor
+
     }
 
     /**
@@ -49,6 +67,43 @@ public class SaveFragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+
+
+        // recycle
+        SavedNewsAdapter savedNewsAdapter = new SavedNewsAdapter();
+        binding.newsSavedRecyclerView.setAdapter(savedNewsAdapter);
+        binding.newsSavedRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        // Item call back
+        savedNewsAdapter.setCallBack(new SavedNewsAdapter.ItemCallBack() {
+            @Override
+            public void onOpenDetails(Article article) {
+                Log.d("onOpenDetails", article.toString());
+            }
+
+            @Override
+            public void onRemoveFavorite(Article article) {
+                saveViewModel.deleteSavedArticles(article);
+            }
+        });
+
+        // DB
+
+        NewsRepository repository = new NewsRepository(getContext());
+        saveViewModel = new ViewModelProvider(this, new NewsViewModelFactory(repository)).get(SaveViewModel.class);
+        saveViewModel.getAllSavedArticles().
+                observe(getViewLifecycleOwner(), savedArticles -> {
+                    if(savedArticles != null){
+                        Log.d("SavedFragments", savedArticles.toString());
+                        savedNewsAdapter.setArticles(savedArticles);
+                    }
+                });
+    }
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
@@ -61,6 +116,7 @@ public class SaveFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_save, container, false);
+        binding = FragmentSaveBinding.inflate(inflater, container, false);
+        return binding.getRoot();
     }
 }
